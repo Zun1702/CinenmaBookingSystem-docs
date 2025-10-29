@@ -1,0 +1,29 @@
+# .NET Core
+bin/
+obj/
+
+# Visual Studio
+*.user
+*.suo
+*.cache
+*.log
+*.vs/
+*.tmp
+
+# IDEs
+.vscode/
+.idea/
+
+# NuGet packages
+packages/
+
+# Node.js (if using npm for frontend)
+node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,6 @@
+@CinemaBookingSystem.aspnet_HostAddress = http://localhost:5027
+
+GET {{CinemaBookingSystem.aspnet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
