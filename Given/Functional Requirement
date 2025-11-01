@@ -1,0 +1,299 @@
+Dưới đây là phần định nghĩa chi tiết và chức năng ứng dụng tương ứng cho từng bảng, chia thành nhóm logic (User – Movie – Cinema – Booking – Payment – Marketing – Review).
+
+🎭 1. USER MANAGEMENT
+🧩 Roles
+Mục đích
+Quản lý phân quyền người dùng trong hệ thống
+Các cột quan trọng
+RoleName (Admin, Manager, Staff, Customer), Description
+Chức năng cần làm
+
+
+
+
+CRUD Role (quản trị viên)
+
+
+Gán Role cho User khi tạo tài khoản
+
+
+Kiểm tra quyền khi đăng nhập và truy cập admin web
+
+
+
+👤 User
+Mục đích
+Bảng cha chứa thông tin tài khoản chung của tất cả người dùng
+Quan hệ
+User.RoleId → Roles.RoleId
+Chức năng cần làm
+
+
+
+
+Đăng ký / Đăng nhập / Đăng xuất
+
+
+Hash mật khẩu
+
+
+Reset password / đổi mật khẩu
+
+
+Cập nhật thông tin cá nhân
+
+
+Phân quyền redirect: Customer → App, Staff/Admin → Admin Web
+
+
+
+👥 Customers
+| Mục đích | Bảng con của User dành riêng cho khách hàng đặt vé |
+ | Quan hệ | Customers.UserId → User.UserId |
+ | Chức năng cần làm |
+Xem thông tin cá nhân
+
+
+Cập nhật profile (địa chỉ, ngày sinh, giới tính)
+
+
+Lưu lịch sử đặt vé và thanh toán
+
+
+
+🎬 2. MOVIE MANAGEMENT
+🎞 Movies
+| Mục đích | Quản lý thông tin phim |
+ | Quan hệ | Movies liên kết nhiều, Showtimes, Reviews |
+ | Cột đáng chú ý | DurationMinutes, AgeRating, TrailerUrl, PosterUrl |
+ | Chức năng |
+Quản lý CRUD phim
+
+
+Upload poster & trailer
+
+
+Lọc phim theo thể loại / độ tuổi / đang chiếu / sắp chiếu
+
+
+Hiển thị danh sách phim nổi bật trên app
+
+
+
+
+🎞 MovieGenres
+| Mục đích | Bảng trung gian nối Movies ↔ Genres |
+ | Chức năng |
+Khi tạo phim, chọn 1 hoặc nhiều thể loại
+
+
+Cho phép query tất cả phim thuộc 1 thể loại cụ thể
+
+
+
+🏢 3. CINEMA MANAGEMENT
+🏠 Cinemas
+| Mục đích | Quản lý thông tin cụm rạp |
+ | Quan hệ | 1–nhiều với Auditoriums |
+ | Chức năng |
+CRUD rạp
+
+
+Hiển thị danh sách rạp gần vị trí người dùng
+
+
+Hiển thị thông tin hotline, địa chỉ
+
+
+
+🏛 Auditoriums
+| Mục đích | Phòng chiếu trong từng rạp |
+ | Quan hệ | Auditoriums.CinemaId → Cinemas.CinemaId |
+ | Chức năng |
+CRUD phòng chiếu
+
+
+Tính tổng số ghế tự động
+
+
+Liệt kê suất chiếu theo phòng
+
+
+
+💺 Seats
+| Mục đích | Quản lý sơ đồ ghế ngồi trong từng phòng |
+ | Cột chính | Row (A–Z), Number (1–20), Type (Standard/VIP/Couple) |
+ | Constraint | UQ_Seat (AuditoriumId, Row, Number) |
+ | Chức năng |
+Xây dựng sơ đồ ghế động (trên web/app)
+
+
+Xác định vị trí cụ thể của từng ghế
+
+
+Cho phép set loại ghế (VIP, đôi, thường)
+
+
+
+🕒 4. SHOWTIME MANAGEMENT
+🎥 Showtimes
+| Mục đích | Quản lý các suất chiếu của từng phim trong từng phòng |
+ | Quan hệ | MovieId → Movies, AuditoriumId → Auditoriums |
+ | Cột chính | StartTime, Price, Format, LanguageType |
+ | Chức năng |
+CRUD suất chiếu (Admin/Staff)
+
+
+Hiển thị danh sách suất chiếu theo rạp, theo phim
+
+
+Chọn suất chiếu trước khi đặt vé
+
+
+Tự động tính EndTime dựa trên Movie.DurationMinutes
+
+
+
+🎟 5. BOOKING SYSTEM
+📘 Bookings
+| Mục đích | Quản lý thông tin đặt vé |
+ | Quan hệ | CustomerId → Customers, ShowtimeId → Showtimes, VoucherId → Vouchers |
+ | Chức năng |
+Khách chọn phim → suất chiếu → ghế → combo → thanh toán
+
+
+Tính tổng giá (ghế + combo – voucher – promotion)
+
+
+Cập nhật Status: Pending → Confirmed → Cancelled
+
+
+
+💺 BookingSeats
+| Mục đích | Quản lý ghế cụ thể được chọn trong mỗi booking |
+ | Quan hệ | BookingId → Bookings, ShowtimeId → Showtimes, SeatId → Seats |
+ | Constraint | UQ_ShowtimeSeat (ShowtimeId, SeatId) để tránh đặt trùng |
+ | Chức năng |
+Khi khách chọn ghế → check seat availability
+
+
+Khi thanh toán thành công → cập nhật IsAvailable = 0
+
+
+Khi hủy vé → set IsAvailable = 1 lại
+
+
+
+🍿 Combos
+| Mục đích | Danh mục combo bắp nước |
+ | Chức năng |
+CRUD combo
+
+
+Hiển thị danh sách combo trên giao diện đặt vé
+
+
+
+🥤 BookingCombos
+| Mục đích | Lưu combo đã chọn trong mỗi booking |
+ | Quan hệ | BookingId → Bookings, ComboId → Combos |
+ | Chức năng |
+Gắn combo vào đơn hàng
+
+
+Tính tổng giá trị combo
+
+
+
+💸 6. DISCOUNT & PROMOTION SYSTEM
+🎫 Vouchers
+| Mục đích | Mã giảm giá do khách nhập khi thanh toán |
+ | Chức năng |
+Check hợp lệ (active, chưa hết hạn, chưa quá usage limit)
+
+
+Tính toán giảm giá dựa vào DiscountType & DiscountValue
+
+
+
+🎁 Promotions
+| Mục đích | Các chương trình khuyến mãi do hệ thống áp dụng tự động |
+ | Chức năng |
+Tạo chương trình giảm giá (ví dụ: “Black Friday 20%”)
+
+
+Tự động áp dụng khi booking đủ điều kiện
+
+
+
+🧾 BookingPromotions
+| Mục đích | Bảng trung gian nối Promotions và Bookings |
+ | Chức năng |
+Lưu khuyến mãi nào đã được áp cho đơn
+
+
+Giúp thống kê hiệu quả từng chiến dịch
+
+
+
+💳 7. PAYMENT SYSTEM
+💰 PaymentMethods
+| Mục đích | Liệt kê các phương thức thanh toán khả dụng |
+ | Ví dụ | MoMo, VNPay, ZaloPay, CreditCard |
+ | Chức năng |
+Admin thêm/xóa phương thức thanh toán
+
+
+Mapping ID tương ứng khi gọi API cổng thanh toán
+
+
+
+💳 Payments
+| Mục đích | Lưu lịch sử thanh toán của đơn hàng |
+ | Quan hệ | BookingId → Bookings, CustomerId → Customers, MethodId → PaymentMethods |
+ | Cột quan trọng | TransactionId – mã giao dịch từ cổng thanh toán |
+ | Chức năng |
+Xử lý callback từ VNPay/Momo
+
+
+Cập nhật Status: Pending → Success / Failed
+
+
+Thống kê doanh thu theo thời gian, phương thức
+
+
+
+⭐ 8. REVIEW SYSTEM
+📝 Reviews
+| Mục đích | Khách hàng đánh giá phim sau khi xem |
+ | Quan hệ | CustomerId → Customers, MovieId → Movies |
+ | Chức năng |
+Khách đánh giá và bình luận sau khi đã xem phim
+
+
+Hiển thị trung bình rating trong trang chi tiết phim
+
+
+Cho phép admin duyệt/xóa review vi phạm
+
+
+
+🔄 TỔNG KẾT CHỨC NĂNG HỆ THỐNG
+Nhóm chức năng
+Vai trò chính
+👤 User Management
+Đăng ký, đăng nhập, phân quyền
+🎬 Movie & Genre
+Quản lý và hiển thị phim, thể loại
+🏢 Cinema
+Quản lý rạp, phòng, sơ đồ ghế
+🎟 Booking
+Đặt vé, chọn ghế, combo, voucher
+💸 Payment
+Thanh toán VNPAY/MoMo/ZaloPay
+🎁 Promotion
+Tạo, quản lý và áp dụng khuyến mãi
+📝 Review
+Khách đánh giá phim sau khi xem
+
+
